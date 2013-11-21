@@ -1827,6 +1827,7 @@ the specific language governing permissions and limitations under the Apache Lic
                 "   <ul class='select2-results' role='listbox'>",
                 "   </ul>",
                 "</div>"].join(""));
+            container.find('.select2-results').after(this.opts.markupAfterResults());
             return container;
         },
 
@@ -2404,6 +2405,7 @@ the specific language governing permissions and limitations under the Apache Lic
                 "   <ul class='select2-results'>",
                 "   </ul>",
                 "</div>"].join(""));
+            container.find('.select2-results').after(this.opts.markupAfterResults());
             return container;
         },
 
@@ -3245,7 +3247,8 @@ the specific language governing permissions and limitations under the Apache Lic
         adaptContainerCssClass: function(c) { return c; },
         adaptDropdownCssClass: function(c) { return null; },
         nextSearchTerm: function(selectedObject, currentSearchTerm) { return undefined; },
-        keepSearchResults: false
+        keepSearchResults: false,
+        markupAfterResults: function () { return ""; }
     };
 
     $.fn.select2.ajaxDefaults = {
