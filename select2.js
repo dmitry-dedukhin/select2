@@ -2358,8 +2358,10 @@ the specific language governing permissions and limitations under the Apache Lic
 
         // single
         clearSearch: function () {
-            this.search.val("");
-            this.focusser.val("");
+            if(!this.opts.keepSearchTerm) {
+                this.search.val("");
+                this.focusser.val("");
+            }
         },
 
         // single
@@ -2543,11 +2545,9 @@ the specific language governing permissions and limitations under the Apache Lic
                     }
                     else if (e.which === KEY.BACKSPACE) {
                         this.unselect(selected.first());
-                        this.search.width(10);
                         selectedChoice = prev.length ? prev : next;
                     } else if (e.which == KEY.DELETE) {
                         this.unselect(selected.first());
-                        this.search.width(10);
                         selectedChoice = next.length ? next : null;
                     } else if (e.which == KEY.ENTER) {
                         selectedChoice = null;
@@ -2704,9 +2704,15 @@ the specific language governing permissions and limitations under the Apache Lic
                 this.search.val(placeholder).addClass("select2-default");
                 // stretch the search box to full width of the container so as much of the placeholder is visible as possible
                 // we could call this.resizeSearch(), but we do not because that requires a sizer and we do not want to create one so early because of a firefox bug, see #944
-                this.search.width(maxWidth > 0 ? maxWidth : this.container.css("width"));
+                //this.search.width(maxWidth > 0 ? maxWidth : this.container.css("width"));
+                this.resizeSearch();
             } else {
-                this.search.val("").width(10);
+                if(!this.opts.keepSearchTerm) {
+                    this.search.val(""); //.width(10);
+                } else {
+                    //this.search.width(maxWidth > 0 ? maxWidth : this.container.css("width"));
+                    this.resizeSearch();
+                }
             }
         },
 
@@ -2794,10 +2800,8 @@ the specific language governing permissions and limitations under the Apache Lic
 
             if (this.opts.closeOnSelect) {
                 this.close();
-                this.search.width(10);
             } else {
                 if (this.countSelectableResults()>0) {
-                    this.search.width(10);
                     this.resizeSearch();
                     if (this.getMaximumSelectionSize() > 0 && this.val().length >= this.getMaximumSelectionSize()) {
                         // if we reached max selection size repaint the results so choices
@@ -2808,7 +2812,6 @@ the specific language governing permissions and limitations under the Apache Lic
                 } else {
                     // if nothing left to select close
                     this.close();
-                    this.search.width(10);
                 }
             }
 
@@ -2965,17 +2968,16 @@ the specific language governing permissions and limitations under the Apache Lic
 
         // multi
         resizeSearch: function () {
-            var minimumWidth, left, maxWidth, containerLeft, searchWidth,
-                sideBorderPadding = getSideBorderPadding(this.search);
+            var selectionWidth = 0,
+                lastChoice = this.selection.find(".select2-search-choice").last(),
+                sideBorderPadding = getSideBorderPadding(this.search),
+                containerLeft = this.selection.offset().left,
+                left = lastChoice.length ? lastChoice.offset().left + lastChoice.outerWidth(true) : containerLeft,
+                maxWidth = this.selection.width(),
+                minimumWidth = measureTextWidth(this.search) + 10,
+                searchWidth;
 
-            minimumWidth = measureTextWidth(this.search) + 10;
-
-            left = this.search.offset().left;
-
-            maxWidth = this.selection.width();
-            containerLeft = this.selection.offset().left;
-
-            searchWidth = maxWidth - (left - containerLeft) - sideBorderPadding;
+            searchWidth = maxWidth - (left - containerLeft) - sideBorderPadding; // all available width
 
             if (searchWidth < minimumWidth) {
                 searchWidth = maxWidth - sideBorderPadding;
@@ -2989,7 +2991,7 @@ the specific language governing permissions and limitations under the Apache Lic
               searchWidth = minimumWidth;
             }
 
-            this.search.width(Math.floor(searchWidth));
+            this.searchContainer.width(Math.floor(searchWidth));
         },
 
         // multi
@@ -3248,7 +3250,8 @@ the specific language governing permissions and limitations under the Apache Lic
         adaptDropdownCssClass: function(c) { return null; },
         nextSearchTerm: function(selectedObject, currentSearchTerm) { return undefined; },
         keepSearchResults: false,
-        markupAfterResults: function () { return ""; }
+        markupAfterResults: function () { return ""; },
+        keepSearchTerm: false,
     };
 
     $.fn.select2.ajaxDefaults = {
